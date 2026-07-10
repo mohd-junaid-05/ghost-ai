@@ -18,7 +18,6 @@ export function ProjectSidebar({
   onClose,
   className,
 }: ProjectSidebarProps) {
-  const sidebarRef = useRef<HTMLElement>(null)
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export function ProjectSidebar({
     <>
       {/* Sidebar panel — floats above canvas, does not push content */}
       <aside
-        ref={sidebarRef}
+        id="project-sidebar"
         data-open={isOpen}
         className={cn(
           "fixed left-0 top-12 z-30 flex h-[calc(100dvh-3rem)] w-72 flex-col border-r border-border-default bg-bg-surface",
@@ -46,8 +45,7 @@ export function ProjectSidebar({
           !isOpen && "-translate-x-full",
           className
         )}
-        aria-hidden={!isOpen}
-        inert={!isOpen}
+        inert={!isOpen || undefined}
       >
         {/* Header */}
         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-default px-4">

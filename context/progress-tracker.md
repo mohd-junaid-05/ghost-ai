@@ -34,4 +34,4 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
-- `EditorShell` performs the wiring between navbar and sidebar. `EditorNavbar` receives `isSidebarOpen` and `onSidebarToggle` props. `ProjectSidebar` receives `isOpen` and `onClose` props. All are client components with interactive state management.
+- Wiring lives in `EditorShell` (client component): owns `sidebarOpen` state and `toggleButtonRef`. `EditorNavbar` receives `isSidebarOpen`, `onSidebarToggle`, and `toggleRef` (forwarded to the toggle `<Button>`). `ProjectSidebar` receives `isOpen` and `onClose`; closing calls `toggleButtonRef.current?.focus()` to return keyboard focus to the navbar toggle. `inert` on the closed sidebar prevents keyboard traversal into off-screen content.
