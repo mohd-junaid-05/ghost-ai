@@ -1,5 +1,6 @@
 "use client"
 
+import { UserButton } from "@clerk/nextjs"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -8,12 +9,14 @@ import { cn } from "@/lib/utils"
 interface EditorNavbarProps {
   isSidebarOpen: boolean
   onSidebarToggle: () => void
+  toggleRef?: React.RefObject<HTMLButtonElement | null>
   className?: string
 }
 
 export function EditorNavbar({
   isSidebarOpen,
   onSidebarToggle,
+  toggleRef,
   className,
 }: EditorNavbarProps) {
   return (
@@ -26,9 +29,12 @@ export function EditorNavbar({
       {/* Left section — sidebar toggle */}
       <div className="flex items-center">
         <Button
+          ref={toggleRef}
           variant="ghost"
           size="icon"
           aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+          aria-expanded={isSidebarOpen}
+          aria-controls="project-sidebar"
           onClick={onSidebarToggle}
           className="text-text-secondary hover:text-text-primary"
         >
@@ -43,8 +49,10 @@ export function EditorNavbar({
       {/* Center section — empty for now */}
       <div className="flex flex-1 items-center justify-center" />
 
-      {/* Right section — empty for now */}
-      <div className="flex items-center" />
+      {/* Right section — user menu */}
+      <div className="flex items-center">
+        <UserButton />
+      </div>
     </header>
   )
 }

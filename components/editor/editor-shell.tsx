@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import { EditorNavbar } from "@/components/editor/editor-navbar"
 import { ProjectSidebar } from "@/components/editor/project-sidebar"
@@ -11,6 +11,7 @@ interface EditorShellProps {
 
 export function EditorShell({ children }: EditorShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const toggleButtonRef = useRef<HTMLButtonElement>(null)
 
   return (
     <div className="relative flex h-dvh flex-col overflow-hidden bg-bg-base">
@@ -18,12 +19,16 @@ export function EditorShell({ children }: EditorShellProps) {
       <EditorNavbar
         isSidebarOpen={sidebarOpen}
         onSidebarToggle={() => setSidebarOpen((prev) => !prev)}
+        toggleRef={toggleButtonRef}
       />
 
       {/* Floating sidebar — slides in over the canvas, no layout shift */}
       <ProjectSidebar
         isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={() => {
+          setSidebarOpen(false)
+          toggleButtonRef.current?.focus()
+        }}
       />
 
       {/* Main canvas area — sits below the navbar, fills remaining space */}
