@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { Plus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -17,10 +18,27 @@ export function ProjectSidebar({
   onClose,
   className,
 }: ProjectSidebarProps) {
+  const sidebarRef = useRef<HTMLElement>(null)
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      // Store the currently focused element (likely the toggle button)
+      previouslyFocusedElementRef.current = document.activeElement as HTMLElement
+    } else {
+      // When closing, return focus to the previously focused element
+      if (previouslyFocusedElementRef.current) {
+        previouslyFocusedElementRef.current.focus()
+        previouslyFocusedElementRef.current = null
+      }
+    }
+  }, [isOpen])
+
   return (
     <>
       {/* Sidebar panel — floats above canvas, does not push content */}
       <aside
+        ref={sidebarRef}
         data-open={isOpen}
         className={cn(
           "fixed left-0 top-12 z-30 flex h-[calc(100dvh-3rem)] w-72 flex-col border-r border-border-default bg-bg-surface",
@@ -29,6 +47,7 @@ export function ProjectSidebar({
           className
         )}
         aria-hidden={!isOpen}
+        inert={!isOpen}
       >
         {/* Header */}
         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-default px-4">
