@@ -1,9 +1,12 @@
-import { Button } from "@/components/ui/button";
+import { EditorShell } from "@/components/editor/editor-shell"
 
 export default function Home() {
   return (
-    <div className="">
-     <Button>click me</Button>
-    </div>
-  );
+    <EditorShell>
+      {/* Canvas placeholder — replace with React Flow canvas in the next phase */}
+      <div className="flex h-full items-center justify-center text-text-faint text-sm select-none">
+        Canvas goes here
+      </div>
+    </EditorShell>
+  )
 }
