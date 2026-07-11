@@ -13,13 +13,45 @@ set -euo pipefail
 
 # Walk up from $PWD to find .env/.env.local (mirrors Clerk CLI behavior).
 # Stops at the first directory that provides CLERK_SECRET_KEY.
+# Uses strict dotenv parsing — only bare KEY=value lines are accepted.
+# No `source`, no command substitution in values, no arbitrary execution.
+_load_dotenv() {
+  local _f="$1"
+  local _line _key _val
+  while IFS= read -r _line || [[ -n "$_line" ]]; do
+    # Strip leading/trailing whitespace
+    _line="${_line#"${_line%%[![:space:]]*}"}"
+    _line="${_line%"${_line##*[![:space:]]}"}"
+    # Skip blank lines and comments
+    [[ -z "$_line" || "$_line" == \#* ]] && continue
+    # Accept only lines that match: IDENTIFIER=literal_value
+    # Reject lines containing $( ) ` or unquoted $ to block command substitution
+    if [[ "$_line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      _key="${BASH_REMATCH[1]}"
+      _val="${BASH_REMATCH[2]}"
+      # Strip surrounding single or double quotes if present
+      if [[ "$_val" =~ ^\"(.*)\"$ ]]; then
+        _val="${BASH_REMATCH[1]}"
+      elif [[ "$_val" =~ ^\'(.*)\'$ ]]; then
+        _val="${BASH_REMATCH[1]}"
+      fi
+      # Block any value containing command substitution characters
+      if [[ "$_val" == *'$('* || "$_val" == *'`'* ]]; then
+        continue
+      fi
+      # Do not override already-exported variables (prevents credential hijack)
+      if [[ -z "${!_key+x}" ]]; then
+        export "$_key=$_val"
+      fi
+    fi
+  done < "$_f"
+}
+
 _dir="$PWD"
 while true; do
   for _envfile in "$_dir/.env" "$_dir/.env.local"; do
     if [[ -f "$_envfile" ]]; then
-      set -a
-      source "$_envfile"
-      set +a
+      _load_dotenv "$_envfile"
     fi
   done
   [[ -n "${CLERK_SECRET_KEY:-}" ]] && break
@@ -28,6 +60,7 @@ while true; do
   _dir="$_parent"
 done
 unset _dir _parent _envfile
+unset -f _load_dotenv
 
 # Parse --admin flag
 ADMIN=false

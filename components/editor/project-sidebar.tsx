@@ -1,31 +1,42 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { Plus, X } from "lucide-react"
+import { Pencil, Plus, Trash2, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import type { MockProject } from "@/hooks/use-project-dialogs"
+
+// ── Props ──────────────────────────────────────────────────────────────────
 
 interface ProjectSidebarProps {
   isOpen: boolean
   onClose: () => void
+  projects: MockProject[]
+  onNewProject: () => void
+  onRenameProject: (project: MockProject) => void
+  onDeleteProject: (project: MockProject) => void
   className?: string
 }
+
+// ── Component ──────────────────────────────────────────────────────────────
 
 export function ProjectSidebar({
   isOpen,
   onClose,
+  projects,
+  onNewProject,
+  onRenameProject,
+  onDeleteProject,
   className,
 }: ProjectSidebarProps) {
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (isOpen) {
-      // Store the currently focused element (likely the toggle button)
       previouslyFocusedElementRef.current = document.activeElement as HTMLElement
     } else {
-      // When closing, return focus to the previously focused element
       if (previouslyFocusedElementRef.current) {
         previouslyFocusedElementRef.current.focus()
         previouslyFocusedElementRef.current = null
@@ -33,8 +44,20 @@ export function ProjectSidebar({
     }
   }, [isOpen])
 
+  const ownedProjects = projects.filter((p) => p.isOwned)
+  const sharedProjects = projects.filter((p) => !p.isOwned)
+
   return (
     <>
+      {/* Mobile backdrop scrim — closes sidebar on tap outside */}
+      {isOpen && (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
       {/* Sidebar panel — floats above canvas, does not push content */}
       <aside
         id="project-sidebar"
@@ -49,9 +72,7 @@ export function ProjectSidebar({
       >
         {/* Header */}
         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-default px-4">
-          <span className="text-sm font-semibold text-text-primary">
-            Projects
-          </span>
+          <span className="text-sm font-semibold text-text-primary">Projects</span>
           <Button
             variant="ghost"
             size="icon"
@@ -75,15 +96,34 @@ export function ProjectSidebar({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent
-              value="my-projects"
-              className="mt-4 flex flex-1 flex-col"
-            >
-              <EmptyPlaceholder label="No projects yet" />
+            <TabsContent value="my-projects" className="mt-4 flex flex-1 flex-col gap-1 overflow-y-auto">
+              {ownedProjects.length === 0 ? (
+                <EmptyPlaceholder label="No projects yet" />
+              ) : (
+                ownedProjects.map((project) => (
+                  <ProjectItem
+                    key={project.id}
+                    project={project}
+                    showActions
+                    onRename={() => onRenameProject(project)}
+                    onDelete={() => onDeleteProject(project)}
+                  />
+                ))
+              )}
             </TabsContent>
 
-            <TabsContent value="shared" className="mt-4 flex flex-1 flex-col">
-              <EmptyPlaceholder label="No shared projects" />
+            <TabsContent value="shared" className="mt-4 flex flex-1 flex-col gap-1 overflow-y-auto">
+              {sharedProjects.length === 0 ? (
+                <EmptyPlaceholder label="No shared projects" />
+              ) : (
+                sharedProjects.map((project) => (
+                  <ProjectItem
+                    key={project.id}
+                    project={project}
+                    showActions={false}
+                  />
+                ))
+              )}
             </TabsContent>
           </Tabs>
         </div>
@@ -91,9 +131,11 @@ export function ProjectSidebar({
         {/* Footer — New Project button */}
         <div className="shrink-0 border-t border-border-default p-3">
           <Button
+            id="sidebar-new-project"
             variant="default"
             className="w-full gap-2"
             aria-label="Create new project"
+            onClick={onNewProject}
           >
             <Plus className="h-4 w-4" />
             New Project
@@ -104,7 +146,49 @@ export function ProjectSidebar({
   )
 }
 
-/* ── Internal helper ─────────────────────────────────────────────────────── */
+// ── Project Item ───────────────────────────────────────────────────────────
+
+interface ProjectItemProps {
+  project: MockProject
+  showActions: boolean
+  onRename?: () => void
+  onDelete?: () => void
+}
+
+function ProjectItem({ project, showActions, onRename, onDelete }: ProjectItemProps) {
+  return (
+    <div className="group flex items-center gap-2 rounded-xl px-2 py-2 hover:bg-bg-subtle">
+      <span className="flex-1 truncate text-sm text-text-primary">{project.name}</span>
+
+      {showActions && (
+        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+          <Button
+            id={`rename-${project.id}`}
+            variant="ghost"
+            size="icon"
+            aria-label={`Rename ${project.name}`}
+            onClick={onRename}
+            className="h-6 w-6 text-text-muted hover:text-text-primary"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            id={`delete-${project.id}`}
+            variant="ghost"
+            size="icon"
+            aria-label={`Delete ${project.name}`}
+            onClick={onDelete}
+            className="h-6 w-6 text-text-muted hover:text-state-error"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Empty Placeholder ──────────────────────────────────────────────────────
 
 function EmptyPlaceholder({ label }: { label: string }) {
   return (

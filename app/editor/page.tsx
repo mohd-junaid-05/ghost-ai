@@ -1,4 +1,5 @@
 import { EditorShell } from "@/components/editor/editor-shell"
+import { EditorHome } from "@/components/editor/editor-home"
 
 export const metadata = {
   title: "Editor — Ghost AI",
@@ -8,10 +9,7 @@ export const metadata = {
 export default function EditorPage() {
   return (
     <EditorShell>
-      {/* Canvas placeholder — replace with React Flow canvas in the next phase */}
-      <div className="flex h-full items-center justify-center text-text-faint text-sm select-none">
-        Canvas goes here
-      </div>
+      <EditorHome />
     </EditorShell>
   )
 }
