@@ -17,6 +17,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - `[x]` Editor wiring — `EditorShell` manages sidebar state and wires `EditorNavbar` (receives `isSidebarOpen` and `onSidebarToggle` props) with `ProjectSidebar` (receives `isOpen` and `onClose` props).
 - `[x]` 03-auth — `ClerkProvider` wraps root layout with dark theme + CSS variable overrides. `proxy.ts` at project root (protected-first: everything blocked except `/sign-in(.*)` and `/sign-up(.*)`). Sign-in and sign-up pages at `app/(auth)/sign-in/[[...sign-in]]/` and `app/(auth)/sign-up/[[...sign-up]]/` — two-panel layout on large screens (branding left, Clerk form right), form-only on mobile, no hardcoded colors. `/` redirects authenticated users to `/editor`, unauthenticated to `/sign-in`. Editor moved to `app/editor/page.tsx`. `UserButton` added to `EditorNavbar` right section. `@clerk/ui` installed. `NEXT_PUBLIC_CLERK_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_SIGN_UP_URL` added to `.env.local`.
 - `[x]` 04-project-dialogs — Editor home screen (`EditorHome`) added with heading and `New Project` button. `useProjectDialogs` hook in `hooks/use-project-dialogs.ts` manages dialog/form/loading state and mock project data. Three dialogs in `components/editor/project-dialogs.tsx`: Create (live slug preview), Rename (auto-focus, Enter submits, prefilled), Delete (destructive confirm). `ProjectSidebar` updated with per-project rename/delete actions (hover-reveal, owned projects only), mock data list, and mobile backdrop scrim. `ProjectDialogsContext` in `contexts/project-dialogs-context.tsx` lets `EditorHome` call `openCreate` without prop-drilling. All state owned in `EditorShell`. No API calls or persistence.
+- `[x]` 05-prisma — `prisma/models/project.prisma` with `Project` and `ProjectCollaborator` models (cascade delete, indexes on `ownerId`, `createdAt`, `email`, `projectId/createdAt`; unique on `projectId/email`). `lib/prisma.ts` cached singleton branches on `DATABASE_URL` prefix: `prisma+postgres://` → `@prisma/adapter-pg` + `withAccelerate()` extension; otherwise direct `@prisma/adapter-pg`. Global cache in dev for hot-reload safety. Migration `20260711095929_init_projects` applied. Prisma Client (v7.8.0) generated to `app/generated/prisma/`. `tsc --noEmit` passes with zero errors.
 
 ## In Progress
 
@@ -24,7 +25,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- 05 (next feature spec)
+- 06 (next feature spec)
 
 ## Open Questions
 
@@ -33,6 +34,7 @@ Update this file whenever the current phase, active feature, or implementation s
 ## Architecture Decisions
 
 - Add decisions that affect the system design or data model.
+- Prisma (05): Schema split into `prisma/schema.prisma` (generator + datasource) and `prisma/models/project.prisma` (models), picked up automatically by `prisma.config.ts` `schema: "prisma/"`. Generator uses `provider = "prisma-client"` (v7) with explicit `output = "../app/generated/prisma"`. `PrismaClient` requires an adapter in v7 — both the direct and Accelerate branches pass `new PrismaPg({ connectionString: url })`. The Accelerate branch additionally chains `.$extends(withAccelerate())`. `@prisma/extension-accelerate` is installed but the Accelerate branch is only active when `DATABASE_URL` starts with `prisma+postgres://`.
 
 ## Session Notes
 
