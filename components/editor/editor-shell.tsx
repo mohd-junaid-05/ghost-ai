@@ -10,21 +10,35 @@ import {
 } from "@/components/editor/project-dialogs"
 import { ProjectSidebar } from "@/components/editor/project-sidebar"
 import { ProjectDialogsContext } from "@/contexts/project-dialogs-context"
-import { useProjectDialogs } from "@/hooks/use-project-dialogs"
+import { useProjectActions } from "@/hooks/use-project-actions"
+import type { ProjectRow } from "@/hooks/use-project-actions"
+
+// ── Props ───────────────────────────────────────────────────────────────────
 
 interface EditorShellProps {
   children?: React.ReactNode
+  ownedProjects: ProjectRow[]
+  sharedProjects: ProjectRow[]
+  /** The projectId of the currently open workspace, if any. */
+  activeProjectId?: string
 }
 
-export function EditorShell({ children }: EditorShellProps) {
+// ── Component ───────────────────────────────────────────────────────────────
+
+export function EditorShell({
+  children,
+  ownedProjects,
+  sharedProjects,
+  activeProjectId,
+}: EditorShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const toggleButtonRef = useRef<HTMLButtonElement>(null)
 
   const {
-    projects,
     dialog,
     nameInput,
     setNameInput,
+    roomIdPreview,
     isLoading,
     openCreate,
     openRename,
@@ -33,7 +47,23 @@ export function EditorShell({ children }: EditorShellProps) {
     submitCreate,
     submitRename,
     submitDelete,
-  } = useProjectDialogs()
+  } = useProjectActions({ activeProjectId })
+
+  // Merge owned + shared into the shape the sidebar expects
+  const ownedRows: ProjectRow[] = ownedProjects.map((p) => ({
+    ...p,
+    isOwned: true,
+  }))
+  const sharedRows: ProjectRow[] = sharedProjects.map((p) => ({
+    ...p,
+    isOwned: false,
+  }))
+
+  // Find active project name
+  const activeProject =
+    ownedRows.find((p) => p.id === activeProjectId) ||
+    sharedRows.find((p) => p.id === activeProjectId)
+  const projectName = activeProject?.name
 
   return (
     <ProjectDialogsContext.Provider value={{ openCreate }}>
@@ -43,16 +73,18 @@ export function EditorShell({ children }: EditorShellProps) {
           isSidebarOpen={sidebarOpen}
           onSidebarToggle={() => setSidebarOpen((prev) => !prev)}
           toggleRef={toggleButtonRef}
+          projectName={projectName}
         />
 
-        {/* Floating sidebar — slides in over the canvas, no layout shift */}
         <ProjectSidebar
           isOpen={sidebarOpen}
           onClose={() => {
             setSidebarOpen(false)
             toggleButtonRef.current?.focus()
           }}
-          projects={projects}
+          ownedProjects={ownedRows}
+          sharedProjects={sharedRows}
+          activeProjectId={activeProjectId}
           onNewProject={openCreate}
           onRenameProject={openRename}
           onDeleteProject={openDelete}
@@ -69,6 +101,7 @@ export function EditorShell({ children }: EditorShellProps) {
           isLoading={isLoading}
           name={nameInput}
           onNameChange={setNameInput}
+          roomIdPreview={roomIdPreview}
           onSubmit={submitCreate}
         />
 

@@ -6,17 +6,19 @@ import { Pencil, Plus, Trash2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import type { MockProject } from "@/hooks/use-project-dialogs"
+import type { ProjectRow } from "@/hooks/use-project-actions"
 
 // ── Props ──────────────────────────────────────────────────────────────────
 
 interface ProjectSidebarProps {
   isOpen: boolean
   onClose: () => void
-  projects: MockProject[]
+  ownedProjects: ProjectRow[]
+  sharedProjects: ProjectRow[]
+  activeProjectId?: string
   onNewProject: () => void
-  onRenameProject: (project: MockProject) => void
-  onDeleteProject: (project: MockProject) => void
+  onRenameProject: (project: ProjectRow) => void
+  onDeleteProject: (project: ProjectRow) => void
   className?: string
 }
 
@@ -25,7 +27,9 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({
   isOpen,
   onClose,
-  projects,
+  ownedProjects,
+  sharedProjects,
+  activeProjectId,
   onNewProject,
   onRenameProject,
   onDeleteProject,
@@ -43,9 +47,6 @@ export function ProjectSidebar({
       }
     }
   }, [isOpen])
-
-  const ownedProjects = projects.filter((p) => p.isOwned)
-  const sharedProjects = projects.filter((p) => !p.isOwned)
 
   return (
     <>
@@ -105,6 +106,7 @@ export function ProjectSidebar({
                     key={project.id}
                     project={project}
                     showActions
+                    isActive={project.id === activeProjectId}
                     onRename={() => onRenameProject(project)}
                     onDelete={() => onDeleteProject(project)}
                   />
@@ -121,6 +123,7 @@ export function ProjectSidebar({
                     key={project.id}
                     project={project}
                     showActions={false}
+                    isActive={project.id === activeProjectId}
                   />
                 ))
               )}
@@ -149,16 +152,29 @@ export function ProjectSidebar({
 // ── Project Item ───────────────────────────────────────────────────────────
 
 interface ProjectItemProps {
-  project: MockProject
+  project: ProjectRow
   showActions: boolean
+  isActive?: boolean
   onRename?: () => void
   onDelete?: () => void
 }
 
-function ProjectItem({ project, showActions, onRename, onDelete }: ProjectItemProps) {
+function ProjectItem({ project, showActions, isActive, onRename, onDelete }: ProjectItemProps) {
   return (
-    <div className="group flex items-center gap-2 rounded-xl px-2 py-2 hover:bg-bg-subtle">
-      <span className="flex-1 truncate text-sm text-text-primary">{project.name}</span>
+    <div
+      className={cn(
+        "group flex items-center gap-2 rounded-xl px-2 py-2 hover:bg-bg-subtle",
+        isActive && "bg-bg-subtle"
+      )}
+    >
+      <span
+        className={cn(
+          "flex-1 truncate text-sm",
+          isActive ? "font-medium text-text-primary" : "text-text-primary"
+        )}
+      >
+        {project.name}
+      </span>
 
       {showActions && (
         <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
