@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth, currentUser } from "@clerk/nextjs/server"
 import prisma from "@/lib/prisma"
 
 // Infer the Project shape from the Prisma client return type
@@ -23,16 +23,21 @@ export async function getUserProjects(): Promise<ProjectsData> {
     return { owned: [], shared: [] }
   }
 
+  const user = await currentUser()
+  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? null
+
   const [owned, sharedCollaborators] = await Promise.all([
     prisma.project.findMany({
       where: { ownerId: userId },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.projectCollaborator.findMany({
-      where: { email: userId }, // email is used as the identifier for shared access
-      include: { project: true },
-      orderBy: { createdAt: "desc" },
-    }),
+    email
+      ? prisma.projectCollaborator.findMany({
+          where: { email },
+          include: { project: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
   ])
 
   const shared = sharedCollaborators.map((c) => c.project)

@@ -1,13 +1,8 @@
 import { auth, currentUser } from "@clerk/nextjs/server"
 import prisma from "@/lib/prisma"
-import { ProjectRecord } from "@/lib/data/projects"
+import type { ProjectRecord } from "@/lib/data/projects"
 
-export interface Identity {
-  userId: string
-  email: string | null
-}
-
-export async function getIdentity(): Promise<Identity | null> {
+export async function getClerkIdentity() {
   const { userId } = await auth()
   if (!userId) return null
 
@@ -17,44 +12,26 @@ export async function getIdentity(): Promise<Identity | null> {
   return { userId, email }
 }
 
-export type ProjectAccessResult =
-  | { hasAccess: false; project: null }
-  | { hasAccess: true; project: ProjectRecord }
-
-/**
- * Checks if the current user has access to the given project either as the
- * owner or as an invited collaborator (by email).
- */
-export async function checkProjectAccess(
-  projectId: string
-): Promise<ProjectAccessResult> {
-  const identity = await getIdentity()
-  if (!identity) {
-    return { hasAccess: false, project: null }
-  }
+export async function checkProjectAccess(projectId: string): Promise<{ hasAccess: boolean; project?: ProjectRecord }> {
+  const identity = await getClerkIdentity()
+  if (!identity) return { hasAccess: false }
 
   const { userId, email } = identity
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: {
-      collaborators: true,
-    },
+    include: { collaborators: true },
   })
 
-  if (!project) {
-    return { hasAccess: false, project: null }
-  }
+  if (!project) return { hasAccess: false }
 
   const isOwner = project.ownerId === userId
-  const isCollaborator =
-    email && project.collaborators.some((c) => c.email.toLowerCase() === email.toLowerCase())
+  const isCollaborator = email && project.collaborators.some((c) => c.email.toLowerCase() === email.toLowerCase())
 
   if (isOwner || isCollaborator) {
-    // Strip collaborators before returning to match ProjectRecord shape
     const { collaborators, ...projectData } = project
     return { hasAccess: true, project: projectData }
   }
 
-  return { hasAccess: false, project: null }
+  return { hasAccess: false }
 }

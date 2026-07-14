@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import Link from "next/link"
 import { Pencil, Plus, Trash2, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,7 @@ interface ProjectSidebarProps {
   onRenameProject: (project: ProjectRow) => void
   onDeleteProject: (project: ProjectRow) => void
   className?: string
+  inline?: boolean
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -34,6 +36,7 @@ export function ProjectSidebar({
   onRenameProject,
   onDeleteProject,
   className,
+  inline = false,
 }: ProjectSidebarProps) {
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null)
 
@@ -51,7 +54,7 @@ export function ProjectSidebar({
   return (
     <>
       {/* Mobile backdrop scrim — closes sidebar on tap outside */}
-      {isOpen && (
+      {isOpen && !inline && (
         <div
           aria-hidden="true"
           className="fixed inset-0 z-20 bg-black/50 md:hidden"
@@ -59,17 +62,18 @@ export function ProjectSidebar({
         />
       )}
 
-      {/* Sidebar panel — floats above canvas, does not push content */}
+      {/* Sidebar panel — floats above canvas or docks inline */}
       <aside
         id="project-sidebar"
         data-open={isOpen}
         className={cn(
-          "fixed left-0 top-12 z-30 flex h-[calc(100dvh-3rem)] w-72 flex-col border-r border-border-default bg-bg-surface",
-          "translate-x-0 transition-transform duration-300 ease-in-out",
-          !isOpen && "-translate-x-full",
+          inline
+            ? "relative flex h-full w-72 shrink-0 flex-col rounded-2xl border border-border-default bg-bg-surface overflow-hidden"
+            : "fixed left-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] w-72 flex-col border-r border-border-default bg-bg-surface translate-x-0 transition-transform duration-300 ease-in-out",
+          !inline && !isOpen && "-translate-x-full",
           className
         )}
-        inert={!isOpen || undefined}
+        inert={!inline && !isOpen ? true : undefined}
       >
         {/* Header */}
         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-default px-4">
@@ -163,18 +167,30 @@ function ProjectItem({ project, showActions, isActive, onRename, onDelete }: Pro
   return (
     <div
       className={cn(
-        "group flex items-center gap-2 rounded-xl px-2 py-2 hover:bg-bg-subtle",
+        "group flex items-center gap-2.5 rounded-xl px-3 py-2 hover:bg-bg-subtle",
         isActive && "bg-bg-subtle"
       )}
     >
-      <span
-        className={cn(
-          "flex-1 truncate text-sm",
-          isActive ? "font-medium text-text-primary" : "text-text-primary"
-        )}
+      <Link
+        href={`/editor/${project.id}`}
+        className="flex flex-1 items-center gap-2.5 truncate"
       >
-        {project.name}
-      </span>
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full shrink-0",
+            isActive ? "bg-accent-primary" : "bg-transparent"
+          )}
+        />
+
+        <span
+          className={cn(
+            "flex-1 truncate text-sm",
+            isActive ? "font-medium text-text-primary" : "text-text-secondary group-hover:text-text-primary"
+          )}
+        >
+          {project.name}
+        </span>
+      </Link>
 
       {showActions && (
         <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
@@ -183,7 +199,11 @@ function ProjectItem({ project, showActions, isActive, onRename, onDelete }: Pro
             variant="ghost"
             size="icon"
             aria-label={`Rename ${project.name}`}
-            onClick={onRename}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onRename?.()
+            }}
             className="h-6 w-6 text-text-muted hover:text-text-primary"
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -193,7 +213,11 @@ function ProjectItem({ project, showActions, isActive, onRename, onDelete }: Pro
             variant="ghost"
             size="icon"
             aria-label={`Delete ${project.name}`}
-            onClick={onDelete}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onDelete?.()
+            }}
             className="h-6 w-6 text-text-muted hover:text-state-error"
           >
             <Trash2 className="h-3.5 w-3.5" />
