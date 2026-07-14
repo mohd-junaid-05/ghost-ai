@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { toSlug } from "@/hooks/use-project-dialogs"
 
 // ── Shared prop types ──────────────────────────────────────────────────────
 
@@ -28,6 +27,8 @@ interface BaseDialogProps {
 interface CreateProjectDialogProps extends BaseDialogProps {
   name: string
   onNameChange: (v: string) => void
+  /** Pre-computed room ID preview string from the hook */
+  roomIdPreview: string
   onSubmit: () => void
 }
 
@@ -37,10 +38,9 @@ export function CreateProjectDialog({
   isLoading,
   name,
   onNameChange,
+  roomIdPreview,
   onSubmit,
 }: CreateProjectDialogProps) {
-  const slug = toSlug(name)
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") onSubmit()
   }
@@ -68,12 +68,10 @@ export function CreateProjectDialog({
             onKeyDown={handleKeyDown}
             className="h-9 bg-bg-subtle"
           />
-          {/* Live slug preview */}
+          {/* Live room ID preview */}
           <p className="text-xs text-text-muted">
-            Slug:{" "}
-            <span className="font-mono text-text-secondary">
-              {slug || "my-project"}
-            </span>
+            Room ID:{" "}
+            <span className="font-mono text-text-secondary">{roomIdPreview}</span>
           </p>
         </div>
 
