@@ -54,7 +54,7 @@ export function ProjectSidebar({
   return (
     <>
       {/* Mobile backdrop scrim — closes sidebar on tap outside */}
-      {isOpen && !inline && (
+      {isOpen && (
         <div
           aria-hidden="true"
           className="fixed inset-0 z-20 bg-black/50 md:hidden"
@@ -62,18 +62,16 @@ export function ProjectSidebar({
         />
       )}
 
-      {/* Sidebar panel — floats above canvas or docks inline */}
+      {/* Sidebar panel — floats above canvas */}
       <aside
         id="project-sidebar"
         data-open={isOpen}
         className={cn(
-          inline
-            ? "relative flex h-full w-72 shrink-0 flex-col rounded-2xl border border-border-default bg-bg-surface overflow-hidden"
-            : "fixed left-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] w-72 flex-col border-r border-border-default bg-bg-surface translate-x-0 transition-transform duration-300 ease-in-out",
-          !inline && !isOpen && "-translate-x-full",
+          "fixed left-0 top-14 z-30 flex h-[calc(100dvh-3.5rem)] w-72 flex-col border-r border-border-default bg-bg-surface/90 backdrop-blur-md shadow-2xl transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-[calc(100%+24px)]",
           className
         )}
-        inert={!inline && !isOpen ? true : undefined}
+        inert={!isOpen ? true : undefined}
       >
         {/* Header */}
         <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-default px-4">
