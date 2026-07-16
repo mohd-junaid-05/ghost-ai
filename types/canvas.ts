@@ -6,8 +6,12 @@ export interface NodeData extends Record<string, unknown> {
   shape?: string
 }
 
+export interface EdgeData extends Record<string, unknown> {
+  label?: string
+}
+
 export type CanvasNode = Node<NodeData>
-export type CanvasEdge = Edge
+export type CanvasEdge = Edge<EdgeData>
 
 // Lowercase aliases as specified in feature-spec
 export type canvasNode = CanvasNode
