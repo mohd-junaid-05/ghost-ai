@@ -1,7 +1,7 @@
 "use client"
 
 import { UserButton } from "@clerk/nextjs"
-import { Ghost, PanelLeftClose, PanelLeftOpen, Share, Sparkles } from "lucide-react"
+import { Ghost, PanelLeftClose, PanelLeftOpen, Share, Sparkles, LayoutTemplate } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -82,6 +82,16 @@ export function EditorNavbar({
       <div className="flex items-center gap-3">
         {projectName && (
           <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-starter-templates"))}
+              className="h-8 gap-2 border-border-default text-text-secondary hover:text-text-primary"
+            >
+              <LayoutTemplate className="h-4 w-4" />
+              Templates
+            </Button>
+
             <Button 
               variant="outline" 
               size="sm" 
