@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put, get } from "@vercel/blob";
+import { put, get, del } from "@vercel/blob";
 import prisma from "@/lib/prisma";
 import { checkProjectAccess } from "@/lib/project-access";
 
@@ -52,6 +52,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     const canvasData = JSON.stringify(body);
     
     // Upload to Vercel Blob
+    const previousPath = project.canvasJsonPath;
     const blob = await put(`projects/${projectId}/canvas.json`, canvasData, {
       access: "private",
       contentType: "application/json",
@@ -64,6 +65,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       where: { id: projectId },
       data: { canvasJsonPath: blob.url },
     });
+
+    if (previousPath) {
+      await del(previousPath, { token: process.env.BLOB_READ_WRITE_TOKEN }).catch((e) =>
+        console.error("Failed to delete stale canvas blob:", e),
+      );
+    }
 
     return NextResponse.json({ success: true, url: blob.url });
   } catch (error) {

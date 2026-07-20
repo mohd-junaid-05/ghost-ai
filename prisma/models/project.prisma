@@ -10,6 +10,7 @@ model Project {
   description    String?
   status         ProjectStatus @default(DRAFT)
   canvasJsonPath String?   @map("canvas_json_path")
+  version        Int       @default(0)
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 

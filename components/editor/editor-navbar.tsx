@@ -16,6 +16,7 @@ interface EditorNavbarProps {
   onAiSidebarToggle?: () => void
   onShareClick?: () => void
   toggleRef?: React.RefObject<HTMLButtonElement | null>
+  aiToggleRef?: React.RefObject<HTMLButtonElement | null>
   projectName?: string
   className?: string
 }
@@ -95,6 +96,7 @@ export function EditorNavbar({
   onAiSidebarToggle,
   onShareClick,
   toggleRef,
+  aiToggleRef,
   projectName,
   className,
 }: EditorNavbarProps) {
@@ -176,6 +178,7 @@ export function EditorNavbar({
             </Button>
 
             <Button
+              ref={aiToggleRef}
               variant={isAiSidebarOpen ? "default" : "ghost"}
               size="sm"
               onClick={onAiSidebarToggle}

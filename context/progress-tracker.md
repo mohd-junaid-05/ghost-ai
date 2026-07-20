@@ -36,11 +36,14 @@ Update this file whenever the current phase, active feature, or implementation s
 - `[x]` 20-ai-sidebar-shell.md — Extracted the AI Copilot placeholder from `editor-shell.tsx` into a dedicated `<AiSidebar>` component. Maintained the existing slide-in floating behavior while implementing a tabbed interface (AI Architect and Specs) using Shadcn UI Tabs. Built out the "AI Architect" chat tab with empty state starter chips, mock chat bubbles styling (right-aligned for user, left-aligned for assistant), and an auto-resizing textarea input. Built out the "Specs" tab with a "Generate Spec" button and a static demo document card, adhering strictly to existing color tokens and design specs.
 - `[x]` 21-canvas-autosave.md — Implemented autosave and persistence for collaborative canvas using Vercel Blob and Prisma. Created backend GET/PUT API routes for canvas state. Developed custom `useCanvasAutosave` hook to debounce and commit JSON canvas state. Integrated initialization logic within `BaseCanvasInner` to selectively load historical blob state upon entry into completely empty rooms, preserving any pre-existing Liveblocks collaborative session states. Added manual Save button in workspace navbar (Saving/Saved/Error temporary states) and converted storage/retrieval to use private Vercel Blob access. Implemented collaborative deletion of selected nodes and edges via Backspace/Delete shortcuts.
 - `[x]` Node Delete Button — Added a node delete button with a `Trash2` dustbin icon next to the color swatches on the selected node's toolbar, enabling quick collaborative element deletion via `deleteElements` from `useReactFlow`.
+- `[x]` Collaborative Cursors ViewportPortal — Wrapped collaborative cursors inside `<ViewportPortal>` so they translate and scale correctly with zoom and pan in the viewport.
+- `[x]` Provider Reordering — Repositioned the error boundary `CanvasWrapper` to wrap the outer `RoomProviderWrapper` so that any Liveblocks connection or authentication errors are caught by `CanvasErrorFallback` instead of escaping and crashing the workspace.
+- `[x]` AI Sidebar Keyboard Navigation and Focus — Wrapped the closed `AiSidebar` in an `inert` attribute to exclude its hidden DOM subtree from tab focus, and set `onClose` to restore focus to the AI navbar toggle button.
 
 ## In Progress
-
+ 
 - `[/]` 22-design-agent-api — Setting up backend Trigger.dev integration, database schema for `TaskRun` tracking, and API endpoints for design triggers and scoped public token generation.
-
+ 
 ## Next Up
 
 - 23-design-agent-logic.md (or next spec)

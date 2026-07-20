@@ -78,6 +78,7 @@ export const ProjectScalarFieldEnum = {
   description: 'description',
   status: 'status',
   canvasJsonPath: 'canvasJsonPath',
+  version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

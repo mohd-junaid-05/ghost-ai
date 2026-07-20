@@ -2,12 +2,13 @@
 
 import React from "react"
 import { useOthers } from "@liveblocks/react/suspense"
+import { ViewportPortal } from "@xyflow/react"
 
 export function LiveCursors() {
   const others = useOthers()
 
   return (
-    <>
+    <ViewportPortal>
       {others.map((other) => {
         const cursor = other.presence?.cursor
         if (!cursor) return null
@@ -49,6 +50,6 @@ export function LiveCursors() {
           </div>
         )
       })}
-    </>
+    </ViewportPortal>
   )
 }

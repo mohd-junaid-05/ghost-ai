@@ -40,6 +40,7 @@ export function EditorShell({
   const [aiSidebarOpen, setAiSidebarOpen] = useState(true)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const toggleButtonRef = useRef<HTMLButtonElement>(null)
+  const aiToggleButtonRef = useRef<HTMLButtonElement>(null)
 
   const {
     dialog,
@@ -83,6 +84,7 @@ export function EditorShell({
           onAiSidebarToggle={() => setAiSidebarOpen((prev) => !prev)}
           onShareClick={() => setShareDialogOpen(true)}
           toggleRef={toggleButtonRef}
+          aiToggleRef={aiToggleButtonRef}
           projectName={projectName}
         />
 
@@ -112,7 +114,10 @@ export function EditorShell({
           {activeProjectId && (
             <AiSidebar 
               isOpen={aiSidebarOpen} 
-              onClose={() => setAiSidebarOpen(false)} 
+              onClose={() => {
+                setAiSidebarOpen(false)
+                aiToggleButtonRef.current?.focus()
+              }} 
             />
           )}
         </div>

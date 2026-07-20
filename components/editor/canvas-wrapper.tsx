@@ -104,17 +104,23 @@ function CanvasErrorFallback() {
 // ── Wrapper Component ───────────────────────────────────────────────────────
 
 interface CanvasWrapperProps {
-  roomId: string
   children: ReactNode
+  roomId?: string
 }
 
-export function CanvasWrapper({ roomId, children }: CanvasWrapperProps) {
+export function CanvasWrapper({ children }: CanvasWrapperProps) {
   return (
     <ErrorBoundary fallback={<CanvasErrorFallback />}>
-      <ClientSideSuspense fallback={<CanvasLoadingFallback />}>
-        {children}
-      </ClientSideSuspense>
+      {children}
     </ErrorBoundary>
+  )
+}
+
+export function CanvasSuspenseWrapper({ children }: { children: ReactNode }) {
+  return (
+    <ClientSideSuspense fallback={<CanvasLoadingFallback />}>
+      {children}
+    </ClientSideSuspense>
   )
 }
 
