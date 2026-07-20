@@ -1,11 +1,7 @@
 "use client"
 
 import React, { Component, ErrorInfo, ReactNode } from "react"
-import {
-  LiveblocksProvider,
-  RoomProvider,
-  ClientSideSuspense,
-} from "@liveblocks/react/suspense"
+import { ClientSideSuspense } from "@liveblocks/react/suspense"
 
 // ── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -14,16 +10,10 @@ interface ErrorBoundaryProps {
   fallback: ReactNode
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean
-}
+class ErrorBoundary extends Component<ErrorBoundaryProps, { hasError: boolean }> {
+  public state = { hasError: false }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = {
-    hasError: false,
-  }
-
-  public static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(_: Error) {
     return { hasError: true }
   }
 
@@ -120,20 +110,11 @@ interface CanvasWrapperProps {
 
 export function CanvasWrapper({ roomId, children }: CanvasWrapperProps) {
   return (
-    <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-      <RoomProvider
-        id={roomId}
-        initialPresence={{
-          cursor: null,
-          isThinking: false,
-        }}
-      >
-        <ErrorBoundary fallback={<CanvasErrorFallback />}>
-          <ClientSideSuspense fallback={<CanvasLoadingFallback />}>
-            {children}
-          </ClientSideSuspense>
-        </ErrorBoundary>
-      </RoomProvider>
-    </LiveblocksProvider>
+    <ErrorBoundary fallback={<CanvasErrorFallback />}>
+      <ClientSideSuspense fallback={<CanvasLoadingFallback />}>
+        {children}
+      </ClientSideSuspense>
+    </ErrorBoundary>
   )
 }
+

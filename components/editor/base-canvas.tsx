@@ -9,6 +9,8 @@ import {
   BackgroundVariant,
   ReactFlowProvider,
   useReactFlow,
+  useNodes,
+  useEdges,
   Handle,
   Position,
   NodeResizer,
@@ -19,8 +21,9 @@ import {
   type NodeProps,
   type EdgeProps,
 } from "@xyflow/react"
-import { useLiveblocksFlow, Cursors } from "@liveblocks/react-flow"
-import { useHistory } from "@liveblocks/react"
+import { useLiveblocksFlow } from "@liveblocks/react-flow"
+import { useHistory, useMyPresence } from "@liveblocks/react"
+import { useRoom } from "@liveblocks/react/suspense"
 import {
   Square,
   Diamond,
@@ -33,12 +36,15 @@ import {
   Maximize,
   Undo,
   Redo,
+  Trash2,
 } from "lucide-react"
 
 import { type CanvasNode, type CanvasEdge, NODE_COLORS } from "@/types/canvas"
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts"
 import { StarterTemplatesModal } from "./starter-templates-modal"
 import { type CanvasTemplate } from "./starter-templates"
+import { LiveCursors } from "./live-cursors"
+import { useCanvasAutosave } from "@/hooks/use-canvas-autosave"
 import { cn } from "@/lib/utils"
 
 import "@xyflow/react/dist/style.css"
@@ -52,7 +58,7 @@ function generateNodeId(shape: string): string {
 }
 
 function CanvasNodeComponent({ id, data, selected }: NodeProps<CanvasNode>) {
-  const { setNodes } = useReactFlow()
+  const { setNodes, deleteElements } = useReactFlow()
   const [isEditing, setIsEditing] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -345,16 +351,46 @@ function CanvasNodeComponent({ id, data, selected }: NodeProps<CanvasNode>) {
             </button>
           )
         })}
+        
+        {/* Divider */}
+        <div className="w-[1px] h-4 bg-border-default mx-0.5" />
+
+        {/* Delete Button */}
+        <button
+          type="button"
+          className="w-6 h-6 rounded flex items-center justify-center text-text-muted hover:text-state-error hover:bg-bg-subtle transition-all duration-150 cursor-pointer focus:outline-none"
+          onClick={(e) => {
+            e.stopPropagation()
+            deleteElements({ nodes: [{ id }] })
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          title="Delete Node"
+          aria-label="Delete Node"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </NodeToolbar>
 
       {shapeElement}
 
       {/* Handles at all four sides for connections */}
-      {/* Set all handles to type="source" under ConnectionMode.Loose to avoid React Flow edge-creation errors (type mismatch) */}
+      {/* Render both source and target handles at each position so any handle can connect to any handle collaboratively */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
+      />
       <Handle
         type="source"
         position={Position.Top}
         id="top"
+        className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom"
         className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
       />
       <Handle
@@ -364,9 +400,21 @@ function CanvasNodeComponent({ id, data, selected }: NodeProps<CanvasNode>) {
         className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
       />
       <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
+      />
+      <Handle
         type="source"
         position={Position.Left}
         id="left"
+        className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
         className="opacity-0 group-hover:opacity-100 transition-opacity !bg-white !w-2 !h-2 border border-border-default !rounded-full z-20"
       />
       <Handle
@@ -603,7 +651,7 @@ function BaseCanvasInner() {
     onEdgesChange,
     onConnect,
     onDelete,
-  } = useLiveblocksFlow({
+  } = useLiveblocksFlow<CanvasNode, CanvasEdge>({
     suspense: true,
     nodes: {
       initial: [],
@@ -616,8 +664,89 @@ function BaseCanvasInner() {
   const reactFlowInstance = useReactFlow()
   const { screenToFlowPosition, addNodes, zoomIn, zoomOut, fitView, setNodes, setEdges } = reactFlowInstance
   const { undo, redo, canUndo, canRedo } = useHistory()
+  const [, updateMyPresence] = useMyPresence()
+  const room = useRoom()
+
+  const reactFlowWrapper = useRef<HTMLDivElement>(null)
+  const hasFittedRef = useRef(false)
+  
+  // Autosave hook
+  useCanvasAutosave({
+    projectId: room.id,
+    nodes,
+    edges,
+  })
+
+  // Initial load hook
+  useEffect(() => {
+    // Only load if the room is completely empty (no existing liveblocks state)
+    if (nodes.length === 0 && edges.length === 0) {
+      const loadSavedCanvas = async () => {
+        try {
+          const response = await fetch(`/api/projects/${room.id}/canvas`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.nodes && data.nodes.length > 0) {
+              setNodes(data.nodes);
+              setEdges(data.edges || []);
+              setTimeout(() => {
+                fitView({ padding: 0.2, duration: 400 });
+              }, 100);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load saved canvas:", error);
+        }
+      };
+
+      loadSavedCanvas();
+    }
+  }, [room.id, setNodes, setEdges, fitView]);
+
+  // Initial collaborative fitView hook (only run once on mount if there are nodes in the room)
+  useEffect(() => {
+    if (nodes.length > 0 && !hasFittedRef.current) {
+      hasFittedRef.current = true
+      setTimeout(() => {
+        fitView({ padding: 0.2 })
+      }, 100)
+    } else if (nodes.length === 0) {
+      // If the room is empty initially, mark it as fitted so we don't fitView on first drop
+      hasFittedRef.current = true
+    }
+  }, [nodes.length, fitView])
 
   useKeyboardShortcuts(reactFlowInstance, undo, redo)
+
+  const activeNodes = useNodes<CanvasNode>()
+  const activeEdges = useEdges<CanvasEdge>()
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Backspace" || event.key === "Delete") {
+        const activeEl = document.activeElement as HTMLElement | null
+        if (activeEl) {
+          const tagName = activeEl.tagName.toLowerCase()
+          if (
+            tagName === "input" ||
+            tagName === "textarea" ||
+            activeEl.isContentEditable
+          ) {
+            return
+          }
+        }
+
+        const selectedNodes = activeNodes.filter((n) => n.selected)
+        const selectedEdges = activeEdges.filter((e) => e.selected)
+
+        if (selectedNodes.length > 0 || selectedEdges.length > 0) {
+          event.preventDefault()
+          onDelete({ nodes: selectedNodes, edges: selectedEdges })
+        }
+      }
+    },
+    [activeNodes, activeEdges, onDelete]
+  )
 
   const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false)
 
@@ -671,9 +800,14 @@ function BaseCanvasInner() {
       height = 100
     }
 
+    // Capture the click offset relative to the dragged toolbar button element
+    const rect = event.currentTarget.getBoundingClientRect()
+    const grabX = event.clientX - rect.left
+    const grabY = event.clientY - rect.top
+
     event.dataTransfer.setData(
       "application/reactflow",
-      JSON.stringify({ shape, width, height })
+      JSON.stringify({ shape, width, height, grabX, grabY })
     )
     event.dataTransfer.effectAllowed = "move"
 
@@ -708,7 +842,14 @@ function BaseCanvasInner() {
     }
 
     document.body.appendChild(dragEl)
-    event.dataTransfer.setDragImage(dragEl, width / 2, height / 2)
+    
+    // Scale the grab offset from the button bounds to the drag preview bounds
+    const buttonWidth = rect.width || 40
+    const buttonHeight = rect.height || 40
+    const previewOffsetX = (grabX / buttonWidth) * width
+    const previewOffsetY = (grabY / buttonHeight) * height
+
+    event.dataTransfer.setDragImage(dragEl, previewOffsetX, previewOffsetY)
     setTimeout(() => {
       document.body.removeChild(dragEl)
     }, 0)
@@ -727,17 +868,31 @@ function BaseCanvasInner() {
       if (!rawData) return
 
       try {
-        const { shape, width, height } = JSON.parse(rawData)
+        const { shape, width, height, grabX, grabY } = JSON.parse(rawData)
 
-        const position = screenToFlowPosition({
-          x: event.clientX,
-          y: event.clientY,
-        })
+        if (!reactFlowWrapper.current) return
+        const rect = reactFlowWrapper.current.getBoundingClientRect()
 
-        // Center the dropped shape under the cursor
+        // Cursor coordinates relative to the React Flow container
+        const clientX = event.clientX
+        const clientY = event.clientY
+        const x = clientX - rect.left
+        const y = clientY - rect.top
+
+        // Get viewport properties to manually project coordinates and ensure 100% accurate alignment
+        const { x: vx, y: vy, zoom } = reactFlowInstance.getViewport()
+        const flowX = (x - vx) / zoom
+        const flowY = (y - vy) / zoom
+
+        // Calculate scaled grab offsets to subtract from flowX and flowY
+        const buttonWidth = 40
+        const buttonHeight = 40
+        const previewOffsetX = (grabX / buttonWidth) * width
+        const previewOffsetY = (grabY / buttonHeight) * height
+
         const adjustedPosition = {
-          x: position.x - width / 2,
-          y: position.y - height / 2,
+          x: flowX - previewOffsetX,
+          y: flowY - previewOffsetY,
         }
 
         const id = generateNodeId(shape)
@@ -763,11 +918,33 @@ function BaseCanvasInner() {
         console.error("Failed to parse shape drag payload:", err)
       }
     },
-    [screenToFlowPosition, addNodes]
+    [reactFlowInstance, addNodes]
   )
 
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent) => {
+      event.preventDefault()
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      })
+      updateMyPresence({ cursor: { x: Math.round(position.x), y: Math.round(position.y) } })
+    },
+    [screenToFlowPosition, updateMyPresence]
+  )
+
+  const handlePointerLeave = useCallback(() => {
+    updateMyPresence({ cursor: null })
+  }, [updateMyPresence])
+
   return (
-    <div className="w-full h-full relative">
+    <div 
+      ref={reactFlowWrapper}
+      className="w-full h-full relative"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      onKeyDown={handleKeyDown}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -781,11 +958,11 @@ function BaseCanvasInner() {
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         connectionMode={ConnectionMode.Loose}
-        fitView
+        deleteKeyCode={null}
         className="w-full h-full"
       >
         {/* Collaborative presence cursors */}
-        <Cursors />
+        <LiveCursors />
 
         {/* Custom styled canvas background dots */}
         <Background

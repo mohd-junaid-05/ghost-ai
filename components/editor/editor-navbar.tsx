@@ -1,7 +1,10 @@
 "use client"
 
+import { useState, useEffect } from "react"
+
 import { UserButton } from "@clerk/nextjs"
-import { Ghost, PanelLeftClose, PanelLeftOpen, Share, Sparkles, LayoutTemplate } from "lucide-react"
+import { CollaboratorAvatars } from "@/components/editor/collaborator-avatars"
+import { Ghost, PanelLeftClose, PanelLeftOpen, Share, Sparkles, LayoutTemplate, Cloud, CloudOff, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -15,6 +18,74 @@ interface EditorNavbarProps {
   toggleRef?: React.RefObject<HTMLButtonElement | null>
   projectName?: string
   className?: string
+}
+
+function SaveButton() {
+  const [buttonState, setButtonState] = useState<"idle" | "saving" | "saved" | "error">("idle")
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+
+    const handleStatus = (e: CustomEvent<"saved" | "saving" | "error">) => {
+      const status = e.detail
+      if (status === "saving") {
+        setButtonState("saving")
+      } else if (status === "saved") {
+        setButtonState("saved")
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          setButtonState("idle")
+        }, 2000)
+      } else if (status === "error") {
+        setButtonState("error")
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          setButtonState("idle")
+        }, 2000)
+      }
+    }
+
+    window.addEventListener("canvas-save-status", handleStatus as EventListener)
+    return () => {
+      window.removeEventListener("canvas-save-status", handleStatus as EventListener)
+      clearTimeout(timeoutId)
+    }
+  }, [])
+
+  const handleSaveClick = () => {
+    window.dispatchEvent(new CustomEvent("trigger-canvas-save"))
+  }
+
+  let buttonText = "Save"
+  let variant: "outline" | "default" | "destructive" = "outline"
+  let disabled = false
+
+  if (buttonState === "saving") {
+    buttonText = "Saving..."
+    disabled = true
+  } else if (buttonState === "saved") {
+    buttonText = "Saved"
+  } else if (buttonState === "error") {
+    buttonText = "Error"
+    variant = "destructive"
+  }
+
+  return (
+    <Button
+      variant={variant}
+      size="sm"
+      onClick={handleSaveClick}
+      disabled={disabled}
+      className={cn(
+        "h-8 font-medium min-w-[70px]",
+        buttonState === "saved" && "text-state-success border-state-success hover:text-state-success bg-state-success/10",
+        buttonState === "error" && "bg-state-error text-white hover:bg-state-error/90"
+      )}
+    >
+      {buttonState === "saving" && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+      {buttonText}
+    </Button>
+  )
 }
 
 export function EditorNavbar({
@@ -82,6 +153,8 @@ export function EditorNavbar({
       <div className="flex items-center gap-3">
         {projectName && (
           <>
+            <SaveButton />
+            <div className="h-4 w-px bg-border-default mx-1" />
             <Button
               variant="outline"
               size="sm"
@@ -121,7 +194,8 @@ export function EditorNavbar({
             <div className="h-4 w-px bg-border-default" />
           </>
         )}
-        <UserButton />
+        {projectName && <CollaboratorAvatars />}
+        {!projectName && <UserButton />}
       </div>
     </header>
   )

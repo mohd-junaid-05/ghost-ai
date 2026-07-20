@@ -4,7 +4,10 @@ import { useReactFlow } from "@xyflow/react"
 export function useKeyboardShortcuts(
   reactFlowInstance: ReturnType<typeof useReactFlow> | null,
   undo: () => void,
-  redo: () => void
+  redo: () => void,
+  onDelete?: (params: { nodes: any[]; edges: any[] }) => void,
+  nodes?: any[],
+  edges?: any[]
 ) {
   useEffect(() => {
     if (!reactFlowInstance) return
@@ -51,13 +54,14 @@ export function useKeyboardShortcuts(
         event.preventDefault()
         redo()
       }
+
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [reactFlowInstance, undo, redo])
+  }, [reactFlowInstance, undo, redo, onDelete, nodes, edges])
 }
 
 export default useKeyboardShortcuts
