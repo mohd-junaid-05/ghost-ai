@@ -37,7 +37,7 @@ Define a `generateSpec` task that:
 
 - accepts `projectId`, `roomId`, `chatHistory`, `nodes`, and `edges`
 - validates input with Zod
-- uses Gemini through `@ai-sdk/google`
+- use OpenRouter `(@openrouter/ai-sdk-provider)` with model `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`
 - generates a Markdown technical spec from the canvas and chat context
 - updates run metadata/status for realtime tracking
 - returns the generated spec content as task output

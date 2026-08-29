@@ -1,11 +1,8 @@
 "use client"
 
 import React, { Component, ErrorInfo, ReactNode } from "react"
-import {
-  LiveblocksProvider,
-  RoomProvider,
-  ClientSideSuspense,
-} from "@liveblocks/react/suspense"
+import { ClientSideSuspense } from "@liveblocks/react/suspense"
+import { ReactFlowProvider } from "@xyflow/react"
 
 // ── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -14,16 +11,10 @@ interface ErrorBoundaryProps {
   fallback: ReactNode
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean
-}
+class ErrorBoundary extends Component<ErrorBoundaryProps, { hasError: boolean }> {
+  public state = { hasError: false }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = {
-    hasError: false,
-  }
-
-  public static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(_: Error) {
     return { hasError: true }
   }
 
@@ -114,26 +105,25 @@ function CanvasErrorFallback() {
 // ── Wrapper Component ───────────────────────────────────────────────────────
 
 interface CanvasWrapperProps {
-  roomId: string
   children: ReactNode
+  roomId?: string
 }
 
-export function CanvasWrapper({ roomId, children }: CanvasWrapperProps) {
+export function CanvasWrapper({ children }: CanvasWrapperProps) {
   return (
-    <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-      <RoomProvider
-        id={roomId}
-        initialPresence={{
-          cursor: null,
-          isThinking: false,
-        }}
-      >
-        <ErrorBoundary fallback={<CanvasErrorFallback />}>
-          <ClientSideSuspense fallback={<CanvasLoadingFallback />}>
-            {children}
-          </ClientSideSuspense>
-        </ErrorBoundary>
-      </RoomProvider>
-    </LiveblocksProvider>
+    <ErrorBoundary fallback={<CanvasErrorFallback />}>
+      <ReactFlowProvider>
+        {children}
+      </ReactFlowProvider>
+    </ErrorBoundary>
   )
 }
+
+export function CanvasSuspenseWrapper({ children }: { children: ReactNode }) {
+  return (
+    <ClientSideSuspense fallback={<CanvasLoadingFallback />}>
+      {children}
+    </ClientSideSuspense>
+  )
+}
+

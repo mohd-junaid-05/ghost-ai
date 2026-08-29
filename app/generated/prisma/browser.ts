@@ -27,3 +27,13 @@ export type Project = Prisma.ProjectModel
  * 
  */
 export type ProjectCollaborator = Prisma.ProjectCollaboratorModel
+/**
+ * Model ProjectSpec
+ * 
+ */
+export type ProjectSpec = Prisma.ProjectSpecModel
+/**
+ * Model TaskRun
+ * 
+ */
+export type TaskRun = Prisma.TaskRunModel

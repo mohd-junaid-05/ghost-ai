@@ -22,7 +22,12 @@ function createPrismaClient(): PrismaClient {
 // In production, module caching is sufficient — a new module is never hot-reloaded.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-const prisma = globalForPrisma.prisma ?? createPrismaClient();
+let prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+// Self-healing check: if the cached instance was built before the projectSpec schema migration, recreate it.
+if (prisma && !("projectSpec" in prisma)) {
+  prisma = createPrismaClient();
+}
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

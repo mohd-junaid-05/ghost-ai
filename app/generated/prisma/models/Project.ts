@@ -20,8 +20,18 @@ export type ProjectModel = runtime.Types.Result.DefaultSelection<Prisma.$Project
 
 export type AggregateProject = {
   _count: ProjectCountAggregateOutputType | null
+  _avg: ProjectAvgAggregateOutputType | null
+  _sum: ProjectSumAggregateOutputType | null
   _min: ProjectMinAggregateOutputType | null
   _max: ProjectMaxAggregateOutputType | null
+}
+
+export type ProjectAvgAggregateOutputType = {
+  version: number | null
+}
+
+export type ProjectSumAggregateOutputType = {
+  version: number | null
 }
 
 export type ProjectMinAggregateOutputType = {
@@ -31,6 +41,7 @@ export type ProjectMinAggregateOutputType = {
   description: string | null
   status: $Enums.ProjectStatus | null
   canvasJsonPath: string | null
+  version: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +53,7 @@ export type ProjectMaxAggregateOutputType = {
   description: string | null
   status: $Enums.ProjectStatus | null
   canvasJsonPath: string | null
+  version: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,11 +65,20 @@ export type ProjectCountAggregateOutputType = {
   description: number
   status: number
   canvasJsonPath: number
+  version: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type ProjectAvgAggregateInputType = {
+  version?: true
+}
+
+export type ProjectSumAggregateInputType = {
+  version?: true
+}
 
 export type ProjectMinAggregateInputType = {
   id?: true
@@ -66,6 +87,7 @@ export type ProjectMinAggregateInputType = {
   description?: true
   status?: true
   canvasJsonPath?: true
+  version?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +99,7 @@ export type ProjectMaxAggregateInputType = {
   description?: true
   status?: true
   canvasJsonPath?: true
+  version?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +111,7 @@ export type ProjectCountAggregateInputType = {
   description?: true
   status?: true
   canvasJsonPath?: true
+  version?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -131,6 +155,18 @@ export type ProjectAggregateArgs<ExtArgs extends runtime.Types.Extensions.Intern
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ProjectAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ProjectSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ProjectMinAggregateInputType
@@ -161,6 +197,8 @@ export type ProjectGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   _count?: ProjectCountAggregateInputType | true
+  _avg?: ProjectAvgAggregateInputType
+  _sum?: ProjectSumAggregateInputType
   _min?: ProjectMinAggregateInputType
   _max?: ProjectMaxAggregateInputType
 }
@@ -172,9 +210,12 @@ export type ProjectGroupByOutputType = {
   description: string | null
   status: $Enums.ProjectStatus
   canvasJsonPath: string | null
+  version: number
   createdAt: Date
   updatedAt: Date
   _count: ProjectCountAggregateOutputType | null
+  _avg: ProjectAvgAggregateOutputType | null
+  _sum: ProjectSumAggregateOutputType | null
   _min: ProjectMinAggregateOutputType | null
   _max: ProjectMaxAggregateOutputType | null
 }
@@ -204,9 +245,11 @@ export type ProjectWhereInput = {
   description?: Prisma.StringNullableFilter<"Project"> | string | null
   status?: Prisma.EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.StringNullableFilter<"Project"> | string | null
+  version?: Prisma.IntFilter<"Project"> | number
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   collaborators?: Prisma.ProjectCollaboratorListRelationFilter
+  specs?: Prisma.ProjectSpecListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -216,9 +259,11 @@ export type ProjectOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   canvasJsonPath?: Prisma.SortOrderInput | Prisma.SortOrder
+  version?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   collaborators?: Prisma.ProjectCollaboratorOrderByRelationAggregateInput
+  specs?: Prisma.ProjectSpecOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -231,9 +276,11 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Project"> | string | null
   status?: Prisma.EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.StringNullableFilter<"Project"> | string | null
+  version?: Prisma.IntFilter<"Project"> | number
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   collaborators?: Prisma.ProjectCollaboratorListRelationFilter
+  specs?: Prisma.ProjectSpecListRelationFilter
 }, "id">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -243,11 +290,14 @@ export type ProjectOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   canvasJsonPath?: Prisma.SortOrderInput | Prisma.SortOrder
+  version?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
+  _avg?: Prisma.ProjectAvgOrderByAggregateInput
   _max?: Prisma.ProjectMaxOrderByAggregateInput
   _min?: Prisma.ProjectMinOrderByAggregateInput
+  _sum?: Prisma.ProjectSumOrderByAggregateInput
 }
 
 export type ProjectScalarWhereWithAggregatesInput = {
@@ -260,6 +310,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   status?: Prisma.EnumProjectStatusWithAggregatesFilter<"Project"> | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
+  version?: Prisma.IntWithAggregatesFilter<"Project"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
 }
@@ -271,9 +322,11 @@ export type ProjectCreateInput = {
   description?: string | null
   status?: $Enums.ProjectStatus
   canvasJsonPath?: string | null
+  version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   collaborators?: Prisma.ProjectCollaboratorCreateNestedManyWithoutProjectInput
+  specs?: Prisma.ProjectSpecCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -283,9 +336,11 @@ export type ProjectUncheckedCreateInput = {
   description?: string | null
   status?: $Enums.ProjectStatus
   canvasJsonPath?: string | null
+  version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   collaborators?: Prisma.ProjectCollaboratorUncheckedCreateNestedManyWithoutProjectInput
+  specs?: Prisma.ProjectSpecUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -295,9 +350,11 @@ export type ProjectUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   collaborators?: Prisma.ProjectCollaboratorUpdateManyWithoutProjectNestedInput
+  specs?: Prisma.ProjectSpecUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -307,9 +364,11 @@ export type ProjectUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   collaborators?: Prisma.ProjectCollaboratorUncheckedUpdateManyWithoutProjectNestedInput
+  specs?: Prisma.ProjectSpecUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -319,6 +378,7 @@ export type ProjectCreateManyInput = {
   description?: string | null
   status?: $Enums.ProjectStatus
   canvasJsonPath?: string | null
+  version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -330,6 +390,7 @@ export type ProjectUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -341,6 +402,7 @@ export type ProjectUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -352,8 +414,13 @@ export type ProjectCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   canvasJsonPath?: Prisma.SortOrder
+  version?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ProjectAvgOrderByAggregateInput = {
+  version?: Prisma.SortOrder
 }
 
 export type ProjectMaxOrderByAggregateInput = {
@@ -363,6 +430,7 @@ export type ProjectMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   canvasJsonPath?: Prisma.SortOrder
+  version?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -374,8 +442,13 @@ export type ProjectMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   canvasJsonPath?: Prisma.SortOrder
+  version?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ProjectSumOrderByAggregateInput = {
+  version?: Prisma.SortOrder
 }
 
 export type ProjectScalarRelationFilter = {
@@ -393,6 +466,14 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type EnumProjectStatusFieldUpdateOperationsInput = {
   set?: $Enums.ProjectStatus
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -413,6 +494,20 @@ export type ProjectUpdateOneRequiredWithoutCollaboratorsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutCollaboratorsInput, Prisma.ProjectUpdateWithoutCollaboratorsInput>, Prisma.ProjectUncheckedUpdateWithoutCollaboratorsInput>
 }
 
+export type ProjectCreateNestedOneWithoutSpecsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSpecsInput, Prisma.ProjectUncheckedCreateWithoutSpecsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSpecsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutSpecsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSpecsInput, Prisma.ProjectUncheckedCreateWithoutSpecsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSpecsInput
+  upsert?: Prisma.ProjectUpsertWithoutSpecsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutSpecsInput, Prisma.ProjectUpdateWithoutSpecsInput>, Prisma.ProjectUncheckedUpdateWithoutSpecsInput>
+}
+
 export type ProjectCreateWithoutCollaboratorsInput = {
   id?: string
   ownerId: string
@@ -420,8 +515,10 @@ export type ProjectCreateWithoutCollaboratorsInput = {
   description?: string | null
   status?: $Enums.ProjectStatus
   canvasJsonPath?: string | null
+  version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  specs?: Prisma.ProjectSpecCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutCollaboratorsInput = {
@@ -431,8 +528,10 @@ export type ProjectUncheckedCreateWithoutCollaboratorsInput = {
   description?: string | null
   status?: $Enums.ProjectStatus
   canvasJsonPath?: string | null
+  version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  specs?: Prisma.ProjectSpecUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutCollaboratorsInput = {
@@ -458,8 +557,10 @@ export type ProjectUpdateWithoutCollaboratorsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  specs?: Prisma.ProjectSpecUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutCollaboratorsInput = {
@@ -469,8 +570,78 @@ export type ProjectUncheckedUpdateWithoutCollaboratorsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
   canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  specs?: Prisma.ProjectSpecUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutSpecsInput = {
+  id?: string
+  ownerId: string
+  name: string
+  description?: string | null
+  status?: $Enums.ProjectStatus
+  canvasJsonPath?: string | null
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  collaborators?: Prisma.ProjectCollaboratorCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutSpecsInput = {
+  id?: string
+  ownerId: string
+  name: string
+  description?: string | null
+  status?: $Enums.ProjectStatus
+  canvasJsonPath?: string | null
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  collaborators?: Prisma.ProjectCollaboratorUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutSpecsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSpecsInput, Prisma.ProjectUncheckedCreateWithoutSpecsInput>
+}
+
+export type ProjectUpsertWithoutSpecsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutSpecsInput, Prisma.ProjectUncheckedUpdateWithoutSpecsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSpecsInput, Prisma.ProjectUncheckedCreateWithoutSpecsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutSpecsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutSpecsInput, Prisma.ProjectUncheckedUpdateWithoutSpecsInput>
+}
+
+export type ProjectUpdateWithoutSpecsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  collaborators?: Prisma.ProjectCollaboratorUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutSpecsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  canvasJsonPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  collaborators?: Prisma.ProjectCollaboratorUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 
@@ -480,10 +651,12 @@ export type ProjectUncheckedUpdateWithoutCollaboratorsInput = {
 
 export type ProjectCountOutputType = {
   collaborators: number
+  specs: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   collaborators?: boolean | ProjectCountOutputTypeCountCollaboratorsArgs
+  specs?: boolean | ProjectCountOutputTypeCountSpecsArgs
 }
 
 /**
@@ -503,6 +676,13 @@ export type ProjectCountOutputTypeCountCollaboratorsArgs<ExtArgs extends runtime
   where?: Prisma.ProjectCollaboratorWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountSpecsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProjectSpecWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -511,9 +691,11 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   description?: boolean
   status?: boolean
   canvasJsonPath?: boolean
+  version?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   collaborators?: boolean | Prisma.Project$collaboratorsArgs<ExtArgs>
+  specs?: boolean | Prisma.Project$specsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -524,6 +706,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   description?: boolean
   status?: boolean
   canvasJsonPath?: boolean
+  version?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -535,6 +718,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   description?: boolean
   status?: boolean
   canvasJsonPath?: boolean
+  version?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -546,13 +730,15 @@ export type ProjectSelectScalar = {
   description?: boolean
   status?: boolean
   canvasJsonPath?: boolean
+  version?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "name" | "description" | "status" | "canvasJsonPath" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "name" | "description" | "status" | "canvasJsonPath" | "version" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   collaborators?: boolean | Prisma.Project$collaboratorsArgs<ExtArgs>
+  specs?: boolean | Prisma.Project$specsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -562,6 +748,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Project"
   objects: {
     collaborators: Prisma.$ProjectCollaboratorPayload<ExtArgs>[]
+    specs: Prisma.$ProjectSpecPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -570,6 +757,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     description: string | null
     status: $Enums.ProjectStatus
     canvasJsonPath: string | null
+    version: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["project"]>
@@ -967,6 +1155,7 @@ readonly fields: ProjectFieldRefs;
 export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   collaborators<T extends Prisma.Project$collaboratorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$collaboratorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectCollaboratorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  specs<T extends Prisma.Project$specsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$specsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectSpecPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1002,6 +1191,7 @@ export interface ProjectFieldRefs {
   readonly description: Prisma.FieldRef<"Project", 'String'>
   readonly status: Prisma.FieldRef<"Project", 'ProjectStatus'>
   readonly canvasJsonPath: Prisma.FieldRef<"Project", 'String'>
+  readonly version: Prisma.FieldRef<"Project", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
 }
@@ -1418,6 +1608,30 @@ export type Project$collaboratorsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.ProjectCollaboratorScalarFieldEnum | Prisma.ProjectCollaboratorScalarFieldEnum[]
+}
+
+/**
+ * Project.specs
+ */
+export type Project$specsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProjectSpec
+   */
+  select?: Prisma.ProjectSpecSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProjectSpec
+   */
+  omit?: Prisma.ProjectSpecOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProjectSpecInclude<ExtArgs> | null
+  where?: Prisma.ProjectSpecWhereInput
+  orderBy?: Prisma.ProjectSpecOrderByWithRelationInput | Prisma.ProjectSpecOrderByWithRelationInput[]
+  cursor?: Prisma.ProjectSpecWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProjectSpecScalarFieldEnum | Prisma.ProjectSpecScalarFieldEnum[]
 }
 
 /**
