@@ -22,7 +22,7 @@ import {
   type EdgeProps,
 } from "@xyflow/react"
 import { useLiveblocksFlow } from "@liveblocks/react-flow"
-import { useHistory, useMyPresence } from "@liveblocks/react"
+import { useHistory, useUpdateMyPresence } from "@liveblocks/react"
 import { useRoom } from "@liveblocks/react/suspense"
 import {
   Square,
@@ -664,7 +664,7 @@ function BaseCanvasInner() {
   const reactFlowInstance = useReactFlow()
   const { screenToFlowPosition, addNodes, zoomIn, zoomOut, fitView, setNodes, setEdges } = reactFlowInstance
   const { undo, redo, canUndo, canRedo } = useHistory()
-  const [, updateMyPresence] = useMyPresence()
+  const updateMyPresence = useUpdateMyPresence()
   const room = useRoom()
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
@@ -923,7 +923,6 @@ function BaseCanvasInner() {
 
   const handlePointerMove = useCallback(
     (event: React.PointerEvent) => {
-      event.preventDefault()
       const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -1074,11 +1073,7 @@ function BaseCanvasInner() {
 }
 
 export function BaseCanvas() {
-  return (
-    <ReactFlowProvider>
-      <BaseCanvasInner />
-    </ReactFlowProvider>
-  )
+  return <BaseCanvasInner />
 }
 
 export default BaseCanvas

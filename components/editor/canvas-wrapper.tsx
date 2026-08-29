@@ -2,6 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from "react"
 import { ClientSideSuspense } from "@liveblocks/react/suspense"
+import { ReactFlowProvider } from "@xyflow/react"
 
 // ── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -111,7 +112,9 @@ interface CanvasWrapperProps {
 export function CanvasWrapper({ children }: CanvasWrapperProps) {
   return (
     <ErrorBoundary fallback={<CanvasErrorFallback />}>
-      {children}
+      <ReactFlowProvider>
+        {children}
+      </ReactFlowProvider>
     </ErrorBoundary>
   )
 }

@@ -3,6 +3,7 @@
 import React from "react"
 import { useOthers } from "@liveblocks/react/suspense"
 import { ViewportPortal } from "@xyflow/react"
+import { Loader2 } from "lucide-react"
 
 export function LiveCursors() {
   const others = useOthers()
@@ -42,10 +43,13 @@ export function LiveCursors() {
               />
             </svg>
             <div
-              className="absolute left-5 top-5 rounded-md px-2 py-0.5 text-[10px] font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis shadow-md shadow-black/20"
+              className="absolute left-5 top-5 flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis shadow-md shadow-black/20"
               style={{ backgroundColor: color }}
             >
-              {name}
+              {other.presence?.thinking && (
+                <Loader2 className="h-2.5 w-2.5 animate-spin text-white shrink-0" />
+              )}
+              <span>{name}</span>
             </div>
           </div>
         )

@@ -34,9 +34,17 @@ export async function POST(request: Request) {
     try {
       await liveblocks.getOrCreateRoom(roomId, {
         defaultAccesses: ["room:write"],
-      })
+      });
+      // Pre-create required feeds to prevent 500 error on first message creation
+      for (const feedId of ["ai-status-feed", "ai-chat", "room-chat"]) {
+        try {
+          await liveblocks.createFeed({ roomId, feedId });
+        } catch {
+          // Ignore if feed already exists or fails
+        }
+      }
     } catch (err) {
-      console.error("Failed to get or create Liveblocks room:", err)
+      console.error("Failed to get or create Liveblocks room/feeds:", err)
     }
 
     // Resolve user details

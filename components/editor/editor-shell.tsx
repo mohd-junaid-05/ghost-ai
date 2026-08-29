@@ -114,6 +114,7 @@ export function EditorShell({
           {activeProjectId && (
             <AiSidebar 
               isOpen={aiSidebarOpen} 
+              projectId={activeProjectId}
               onClose={() => {
                 setAiSidebarOpen(false)
                 aiToggleButtonRef.current?.focus()
